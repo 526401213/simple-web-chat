@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		@ include('/common/common_heade.html'){}
+		<title>登录</title>
+		<style>
+			#login{
+				margin: auto auto;
+			}
+			.form-item{
+				width: 100px;
+				font-size: 18px;
+				padding-left: 8px;
+	
+				/** text-align: center **/;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="easyui-window" data-options="
+		            width:350,
+		            height:240,
+		            title:'登录',
+		            iconCls:'icon-lock',
+		            collapsible:false,
+		            minimizable:false,
+		            maximizable:false,
+		            closable:false,
+		            resizable:false,
+		            border:'thin',
+		            constrain:true,
+		            ">
+			<form id="form" class="easyui-form">
+				<table style="margin-top: 20px">
+					<tr>
+						<td class="form-item">昵称</td><td colspan="2"><input name="name" class="easyui-textbox" data-options="required:true,width:250,height:35,prompt:'登录账户',iconCls:'icon-man',validType:['minWithMaxLength[2,12]','noSpaces']"/></td>
+					</tr>
+					<tr>
+						<td class="form-item">密码</td><td colspan="2"><input name="pass" class="easyui-passwordbox" data-options="required:true,width:250,height:35,validType:'minWithMaxLength[4,12]'"/></td>
+					</tr>
+					<tr>
+						<td class="form-item">验证码</td>
+						<td><input name="verifyCode" class="easyui-textbox" maxlength="4" data-options="tipPosition:'left',required:true,width:150,height:35,prompt:'验证码',validType:'minWithMaxLength[4,4]'"/></td>
+						<td><img id="verifycode" src="${ctxPath}/verifycode" alt="" style="height: 42px;width: 100px;cursor: pointer"></td>
+					</tr>
+					<tr style="margin-top: 5px;">
+						<td colspan="3" style="text-align: center">
+							<a id="sure" data-url="${ctxPath}/login">登录</a>
+							<a id="regi" data-url="${ctxPath}/register">注册</a>
+						</td>
+					</tr>
+				</table>
+			</form>
+		</div>
+	</body>
+	<script>
+	    $(function () {
+	        $('#verifycode').click(function () {
+	            $(this).attr({'src':'${ctxPath}/verifycode?time='+new Date().getTime()})
+	        });
+	        $('#sure').linkbutton({
+	            width:100,
+	            iconCls:'icon-ok',
+	            onClick:post,
+	        })
+	
+	        $('#regi').linkbutton({
+	            width:100,
+	            iconCls:'icon-save',
+	            onClick:post,
+	        })
+	    });
+	    
+	    function post(){
+	    	if(CT.validateForm($('#form'))){
+	    		var url = $(this).attr('data-url');
+                CT.ajax({
+                    url:url,
+                    data:$('#form').serialize(),
+                    success:function (response) {
+                        window.location.href = "${ctxPath}/index"
+                    },
+                    error:function () {
+                        $('#verifycode').attr({'src':'${ctxPath}/verifycode?time='+new Date().getTime()})
+                    }
+                })
+            }
+	    }
+	</script>
+	</html>

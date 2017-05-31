@@ -1,0 +1,54 @@
+WebChat
+	User
+		* 进入时,身份为匿名用户,由系统分配角色名称
+		* 注册后,使用自己的身份
+		* 登录后,使用自己的身份
+	
+	
+
+Endopoint
+	Map
+		sessionId:session
+		
+Redis
+	userId:{sessionId:'dqwdq'}
+
+
+open
+	sessionId/userId
+	1,根据userId检索数据
+		* 检索Redis
+		* 检索DB
+	2,设置 sessionId
+	3, 
+	存入Map
+	存入Redis
+	广播
+
+close
+	sessionId/userId
+	移除Map		delete sessionid
+	移除Redis		delete userId
+	广播
+
+onMessage
+
+编码
+	根据userId检索数据
+		* 检索Redis
+		* 检索DB
+	反写数据
+
+
+Spring-boot
+Mybatis
+Druid
+Beetl
+EasyUI
+WangEditor
+Redis
+MySQL
+CentOS7
+WebSocket
+Nginx
+	

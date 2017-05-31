@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    	@ include('/common/common_heade.html'){}
+        <title>Simple-Web-Chat</title>
+        <link rel="stylesheet" type="text/css" href="${ctxPath}/static/editor/css/wangEditor.min.css">
+        <style type="text/css">
+        	/** 主窗体 **/
+        	.main{
+        		width:1300px;
+        		height:900px;
+        	}
+			/**
+        	#chat-tools{
+        		width: 100%;
+        		height:30px;
+        		background-color: #56626;
+        		padding: 3px;
+        	}*/
+        	.users{
+        		cursor: pointer;
+        	}
+        	
+        	.users span{
+        		font: bold 15px "微软雅黑";
+			    color: black;
+        	}
+        	/***********************/
+       	    .receiver{
+	            clear:both;
+	        }
+	        .receiver div:nth-of-type(1){
+	            float: left;
+	        }
+	        .receiver div:nth-of-type(2){
+	            background-color: aquamarine;
+	            float: left;
+	            margin: 0 20px 10px 15px;
+	            /**padding: 10px 10px 10px 0px;**/
+	            border-radius:7px;
+	        }
+	
+	        .sender div:first-child img,
+	        .receiver div:first-child img{
+	            width:50px;
+	            height: 50px;
+	        }
+	
+	        .sender{
+	            clear:both;
+	        }
+	        .sender div:nth-child(1){
+	            float: right;
+	        }
+	        .sender div:nth-of-type(2){
+	            float:right;
+	            background-color: gold;
+	            margin: 0 10px 10px 20px;
+	           /** padding: 10px 0px 10px 10px;**/
+	            border-radius:7px;
+	        }
+	
+	        .left_triangle{
+	            height:0px;  
+	            width:0px;  
+	            border-width:8px;  
+	            border-style:solid;  
+	            border-color:transparent aquamarine transparent transparent;  
+	            position: relative;
+	            left:-16px;
+	            top:3px;
+	        }
+	
+	        .right_triangle{
+	            height:0px;  
+	            width:0px;  
+	            border-width:8px;  
+	            border-style:solid;  
+	            border-color:transparent transparent transparent gold;  
+	            position: relative;
+	            right:-16px;
+	            top:3px;
+	        }
+		        	
+        	
+        </style>
+        <script type="text/javascript">
+	        window.setInterval(function(){
+	        	$('#chat-message-view').panel('setTitle',new Date().now());
+	        },1000);
+        </script>
+    </head>
+    @/**
+    	chat-online-users		
+    	chat-message-view
+    	chat-editor
+    @*/
+    <body>   
+    	<div class="easyui-layout main">
+    		@// top
+	    	<div data-options="region:'north',title:'WebChat-v1',collapsible:false" style="height:100px;overflow: hidden;">
+	    		<ul>
+	    			<li><strong>Github:</strong><a href="http://git.oschina.net/KevinBlandy/simple-web-chat">git.oschina.net/KevinBlandy/simple-web-chat</a></li>
+	    			<li><strong>Author:</strong><a href="javascript:void(0)">747692844</a></li>
+	    			<li><strong>Useing:</strong>Spring-boot,MyBatis,Druid,Beetl,EasyUI,WangEditor,Redis,MySQL,CentOS7,WebSocket,Nginx</li>
+	    		</ul>
+	    	</div>
+		    @// 在线用户   
+		    <div id="chat-online-users" data-options="region:'west',title:'在线用户(1)',iconCls:'icon-man',collapsible:false" style="width:220px;">
+		    	@ //当前用户
+		    	<div class="easyui-panel users" data-options="height:55" id="${session.session_user.userId}" onclick="edit();">
+		    		<div style="float: left"><img id="${session.session_user.userId}_portrait" src="${session.session_user.portrait}" width="50px" height="50px"/></div>
+		    		<div><span>昵称: </span><small id="${session.session_user.userId}_name">${session.session_user.name}</small></div>
+		    		<div><span>签名: </span><small id="${session.session_user.userId}_personality">${session.session_user.personality}</small></div>
+		    	</div>
+		    	<div class="easyui-progressbar" data-options="value:100,text:'',width:200,height:10" ></div>
+		    	@ //在线用户 
+		    	
+		    </div>   
+		    <div data-options="region:'center'">
+		    
+		    	@ //  ================聊天主页面  begin
+		    	<div class="easyui-layout" data-options="fit:true">
+		    		@// 消息界面   
+				    <div id="chat-message-view" data-options="region:'north',border:false,title:' ',collapsible:false" style="height:590px;padding: 10px">
+				    	@ /** 消息体begin
+				    	<!-- Left -->
+						<div class="receiver chat-message">
+							<div>
+								<img src="http://7xk6hd.com1.z0.glb.clouddn.com/wp-content/uploads/2015/10/edd85962dd22_avatar-54x54.png">
+							</div>
+							<div>
+								<div class="left_triangle"></div>
+								<div>51651</div>
+							</div>
+						</div>
+  
+						<!-- Right-->
+						<div class="sender chat-message">
+							<div>
+								<img src="http://7xk6hd.com1.z0.glb.clouddn.com/wp-content/uploads/2015/09/62fe2d610ba9_avatar-80x80.jpeg">
+							</div>
+							<div>
+								<div class="right_triangle"></div>
+								<span> hello world </span>
+							</div>
+						</div> 
+						@ 消息体end **/
+				    </div>   
+				    <script type="text/javascript">
+				    	
+				    </script>
+				    @// 消息发送台
+				    <div data-options="region:'center',border:false" style="height:210px;">
+				    	@ /**		//使用富文本编辑器,不需要自己定义工具类
+				    		<div id="chat-tools" class="easyui-panel">
+				    			<a id="btn" href="javascript:void(0);" class="easyui-linkbutton" data-options="iconCls:'icon-large-picture',width:100,height:30">插入图片</a>  
+				    		</div>
+					    @ */
+				    	<div id="chat-editor" style="height: 165px;">
+				    	</div>
+				    	<div style="text-align: right;padding: 5px;height: 20px;">
+				    		<div style="float: left;">
+				    			<label>是否开启用户上线/下线提示</label>
+				    			 <input id="chat-joinexit-tip" class="easyui-switchbutton" data-options="onText:'开启',offText:'关闭',width:100,checked:true,onChange:function(){
+				    				CHAT.joinOrExitTip = !CHAT.joinOrExitTip;
+				    			}">
+				    		</div>
+				    		<a href="javascript:void(0)" class="easyui-linkbutton send" data-options="iconCls:'icon-ok',width:100,height:30,onClick:sendMessage">发送</a>
+				    	</div>
+				    </div>   
+				</div> 
+				@ //  ================聊天主页面  end
+				
+		    </div>   
+    	</div>
+    	
+    	<div id="window" class="easyui-window" data-options="
+            iconCls:'icon-edit',
+            title:'编辑个人信息',
+            collapsible:false,
+            minimizable:false,
+            maximizable:false,
+            resizable:false,
+            closable:true,
+            modal:true,
+            closed:true,
+            border:'thin',
+            onClose:function(){
+            	$('#form').form('clear');
+            	$('#form').form('load',CHAT.me);
+            	$('#headImg').attr({src:CHAT.me.portrait})
+            },
+            constrain:true,
+    	">
+    		<form class="form" id="form">
+    			<input type="hidden" name="userId" value="${session.session_user.userId}"/>
+    			<input id="portrait" type="hidden" name="portrait" value="${session.session_user.portrait}"/>
+    			<table>
+    				<tr>
+    					<th colspan="2" style="text-align: center;"> 
+    						<img id="headImg" src="${session.session_user.portrait}" width="100px" height="100px"/>
+    					</th>
+    				</tr>
+    				<tr>
+    					<td>头像</td>
+    					<td><input accept="image/jpeg,image/png,image/gif" class="easyui-filebox" data-options="buttonText:'选择图片',onChange:fileChange"/></td>
+    				</tr>
+    				<tr>
+    					<td>昵称</td>
+    					<td><input name="name" class="easyui-textbox" data-options="value:'${session.session_user.name}',required:true,validType:['minWithMaxLength[2,12]','noSpaces']"/></td>
+    				</tr>
+    				<tr>
+    					<td>密码</td>
+    					<td><input name="pass" class="easyui-textbox" data-options="required:false,validType:['minWithMaxLength[4,12]']"/></td>
+    				</tr>
+    				<tr>
+    					<td>签名</td>
+    					<td><input name="personality" class="easyui-textbox" data-options="value:'${session.session_user.personality}',required:false,multiline:true,validType:['minWithMaxLength[0,50]']"/></td>
+    				</tr>
+    				<tr>
+    					<th style="text-align: center;" colspan="2">
+    						<a class="easyui-linkbutton" data-options="iconCls:'icon-ok',width:100,onClick:sure">确定</a>
+    					</th>
+    				</tr>
+    			</table>
+    		</form>
+    	</div>
+	</body>
+	@ //  <script type="text/javascript" src="../dist/js/lib/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript" src="${ctxPath}/static/editor/js/wangEditor.min.js"></script>
+    <script>
+    	/** CHAT **/
+    	CHAT = {
+    		//WebSocket
+    		ws:null,
+    		//currentUserId
+    		userId:"${session.session_user.userId}",
+    		//tip
+    		joinOrExitTip:true,
+    		//printMessage
+    		printMessage:true,
+    		//editor
+    		editor:null,
+    		//disabled
+    		disabledItems:['fullscreen','table','location','source','quote','head','video','alignleft','aligncenter','alignright'],
+    		//me
+    		me:{
+    			userId:'${session.session_user.userId}',
+    			name:'${session.session_user.name}',
+    			portrait:'${session.session_user.portrait}',
+    			personality:'${session.session_user.personality}',
+    			pass:'',
+    		},
+    		//lastSend
+    		lastSend:null,
+    		//frequency - s
+    		frequency:1,
+    		messages:[],
+    		maxMesageShow: 50,
+    	};
+    	
+    	
+        /**	editor init **/
+        CHAT.editor = new wangEditor('chat-editor');
+        CHAT.editor.config.menus = $.map(wangEditor.config.menus, function(item, key) {
+        	if(CHAT.disabledItems.indexOf(item) != -1){
+        		return null;
+        	}
+            return item;
+        });
+        CHAT.editor.config.hideLinkImg = true;
+        CHAT.editor.config.uploadImgUrl = "${ctxPath}/upload";
+        CHAT.editor.config.uploadImgFileName = 'file';
+        CHAT.editor.create();
+        
+        $(function(){
+        	$('#chat-message-view').panel('setTitle',new Date().now());
+        	CHAT.ws = new WebSocket("ws://chat.kevinblandy.com:80${ctxPath}/chat/" + CHAT.userId);
+            //CHAT.ws = new WebSocket("ws://localhost:8081${ctxPath}/chat/" + CHAT.userId);
+            CHAT.ws.onmessage = onMessage;
+            CHAT.ws.onopen = function(event){};
+            CHAT.ws.onerror = function(event){};
+            CHAT.ws.onclose = function(event){
+            	CT.showMessage("断开与服务器的连接");
+            };
+        });
+		
+        function sendMessage(){
+        	var now = new Date().getTime();
+        	if(CHAT.lastSend){
+        		if(!(now - CHAT.lastSend >= (CHAT.frequency * 1000))){
+        			$.messager.alert("提示","消息发送频率太高","warning");
+        			return;
+        		}
+        	}
+        	CHAT.lastSend = now;
+        	var message = CHAT.editor.$txt.html();	//html
+        	if(message.trim() === '<p><br></p>'){
+        		$.messager.alert("提示","请输入消息","warning");
+        		return;
+        	}
+        	//发送
+        	message = new GroupMessage(message);
+        	CHAT.ws.send(JSON.stringify(message));
+        	//添加数据到聊天面板
+        	$('#chat-message-view').append(renderMessage(message,true))
+        	scrollMessageView();
+        	//清空编辑器
+        	CHAT.editor.$txt.html('<p><br></p>');
+        }
+        
+        //消息事件
+		function onMessage(event){
+            var message = JSON.parse(event.data);
+            if(CHAT.printMessage){
+            	console.log(message);
+            }
+			switch (message.type){
+				case 'ONLINE':{	
+					message.users.forEach(function(user){
+						create(user);
+					});	
+					break;
+				};
+				case 'GROUP':{	
+					$('#chat-message-view').append(renderMessage(message));
+					scrollMessageView();
+					break;
+				};
+				case 'EXIT':{	
+					if(CHAT.joinOrExitTip){
+						CT.showMessage("用户 ["+message.user.name+"] 退出了聊天室");	
+					}
+					remove(message.user);
+					break;
+				};
+				case 'JOIN':{	
+					if(CHAT.joinOrExitTip){
+						CT.showMessage("用户 ["+message.user.name+"] 加入了聊天室");	
+					}					
+					create(message.user)
+					break;
+				};
+				case 'USER_INFO_UPDATE':{	
+					updateUser(message.user);
+					break;
+				};
+				case 'OTHER_LOGIN':{		//异地登录
+					$.messager.alert("提示","你的账户在别处登录,你已经被迫下线","warning",function(){
+						window.location.href = "${ctxPath}/login"		//仅仅重定向
+					});
+					break;
+				};
+				default:{
+					//非法信息
+				}
+			}
+		}
+	
+		
+		//refresh
+		function refreshOnline(){
+			$('#chat-online-users').panel('setTitle',"在线用户("+ $('.users').length +")");
+		}
+		//create
+		function create(user){
+			if(document.getElementById(user.userId)){
+				return;
+			}
+			$('#chat-online-users').append(renderElement(user));
+			$('#'+user.userId).panel({});
+			$('#'+user.userId).mouseover(function(){
+            	$(this).css({'background-color':'#E6F0FF','margin':'5px'})
+            }).mouseout(function(){
+            	$(this).css({'background-color':'','margin':'0'})
+            }).click(function(){
+            	CT.showAlert("私聊功能开发ing....");
+            });
+			refreshOnline();
+		}
+		//remove
+		function remove(user){
+			if(document.getElementById(user.userId)){
+				$('#'+user.userId).remove();
+			}
+			refreshOnline();
+		}
+		
+		//render user
+		function renderElement(user){
+			var element =  "<div class=\"easyui-panel users\" data-options=\"height:55\" id=\""+user.userId+"\">" +
+					    		"<div style=\"float: left\"><img id=\""+user.userId+"_portrait\" src=\""+user.portrait+"\" width=\"50px\" height=\"50px\"/></div>" +
+					    		"<div><span>昵称: </span><small id=\""+user.userId+"_name\">"+user.name+"</small></div> " +
+					    		"<div><span>签名: </span><small id=\""+user.userId+"_personality\">"+user.personality+"</small></div>" +
+			    			"</div>";
+			return element;
+		}
+
+		//render message
+		function renderMessage(message,isSender){
+            var node = "<div class=\""+(isSender ? "sender":"receiver")+" chat-message\">"+
+                       "<div>" +
+                        "<img src=\""+message.from.portrait+"\">"+
+                            "</div>" +
+                            "<div>" +
+                            "<div class=\""+(isSender ? "right_triangle":"left_triangle")+"\"></div>"+
+                            "<div>"+message.content.trim()+"</div>" +
+                        "</div>" +
+                        "</div>";
+            CHAT.messages.push(node);
+            return node;
+		}
+
+		//update
+		function updateUser(user){
+			var element = document.getElementById(user.userId);
+			if(element){
+				$('#'+user.userId+"_portrait").attr({"src":user.portrait});
+				$('#'+user.userId+"_name").text(user.name);
+				$('#'+user.userId+"_personality").text(user.personality);
+			}
+		}
+	
+		
+		//edit
+		function edit(){
+			$('#window').window('open');
+		}
+		
+		function scrollMessageView(){
+			if(CHAT.messages.length >= CHAT.maxMesageShow){
+				$('.chat-message:eq(0)').remove();
+				CHAT.messages.shift();
+			}
+			$('#chat-message-view').scrollTop($('#chat-message-view')[0].scrollHeight);
+		}
+		
+		function fileChange(newValue, oldValue){
+			if(newValue){
+				var file = getFile();
+				if(file.size > (1024 * 1024) * 10){
+					CT.showAlert("图片不能大于10MB")
+					$(this).filebox('clear');
+					return;
+				}
+				/**
+				var reader = new FileReader();
+				reader.onload = function(e){ 
+					$('#headImg').attr({src:reader.result});
+				} 
+				reader.readAsDataURL(file);**/
+				var formData = new FormData();
+				formData.append("file",file);
+				$.messager.progress({text:'上传中....'});
+				$.ajax({
+					url : '${ctxPath}/upload',
+					type : 'POST',
+					data : formData,
+					dataType:'HTML',
+					processData : false,
+					contentType : false,
+					success : function(response) {
+						$('#portrait').val(response);
+						$('#headImg').attr({'src':response});
+					},
+					error : function(response) {
+						//noting to do
+					}
+				});
+				$.messager.progress('close');
+			}	
+		}
+		
+		function sure(){
+			if(CT.validateForm($('#form'))){
+				CT.ajax({
+					url:'${ctxPath}/user/update',
+					data:$('#form').serialize(),
+					success:function(response){
+						response.data.pass='';
+						CHAT.me = response.data;
+						$('#window').window('close');
+					},
+					errror:function(){
+						//noting to do
+					}
+				});
+			}
+		}
+		function getFile(){
+			return $('#filebox_file_id_1')[0].files[0];
+		}
+		
+		// Classes =========================
+		
+		//群组消息
+        function GroupMessage(message){
+            this.content = message;
+            this.from = CHAT.me,
+            this.type = 'GROUP';
+        }
+    </script>
+</html>
